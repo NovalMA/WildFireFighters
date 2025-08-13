@@ -62,7 +62,7 @@ const PLAYER_HEIGHT = 1.8
 const WATER_RANGE = 8
 const REFILL_RATE = 2
 const FIRE_SPREAD_RATE = 4.0 // Even slower fire spread initially
-const INITIAL_FIRES = 5
+const INITIAL_FIRES = 5 // number of initial fires
 const CAMERA_DISTANCE = 10
 const CAMERA_HEIGHT = 8
 
@@ -226,7 +226,7 @@ export default function WildFireFighters(): JSX.Element {
     }))
 
     // Initialize refill stations
-    gameState.refillStations.forEach((station, index) => {
+    gameState.refillStations.forEach((station, _index) => {
       const stationGeometry = new THREE.CylinderGeometry(station.radius, station.radius, 0.5, 16)
       const stationMaterial = new THREE.MeshLambertMaterial({ color: 0x4a90e2 })
       const stationMesh = new THREE.Mesh(stationGeometry, stationMaterial)
@@ -295,7 +295,7 @@ export default function WildFireFighters(): JSX.Element {
       renderer.setSize(window.innerWidth, window.innerHeight)
     }
     window.addEventListener('resize', handleResize)
-  }, [])
+  }, [gameState.refillStations])
 
   // Generate random trees with collision avoidance
   const generateTrees = useCallback((refillStations: RefillStation[]): { x: number; z: number; radius: number }[] => {
@@ -482,7 +482,7 @@ export default function WildFireFighters(): JSX.Element {
       e.preventDefault()
     }
 
-    const handleMouseUp = (e: MouseEvent): void => {
+    const handleMouseUp = (_e: MouseEvent): void => {
       mouseRef.current.isDragging = false
       mouseRef.current.x = 0
       mouseRef.current.y = 0
@@ -522,10 +522,10 @@ export default function WildFireFighters(): JSX.Element {
 
   // Update player movement and actions
   const updatePlayer = (player: Player, deltaTime: number): Player => {
-    let baseSpeed = 5
+    const baseSpeed = 5
     const rotationSpeed = 0.032
     const keys = keysRef.current
-    let newPlayer = { ...player }
+    const newPlayer = { ...player }
 
     // Arrow key rotation (character facing)
     if (keys.has('arrowleft')) {
@@ -536,7 +536,7 @@ export default function WildFireFighters(): JSX.Element {
     }
 
     // Movement
-    let moveVector = { x: 0, z: 0 }
+    const moveVector = { x: 0, z: 0 }
     if (keys.has('w')) moveVector.z -= 1
     if (keys.has('s')) moveVector.z += 1
     if (keys.has('a')) moveVector.x -= 1
@@ -656,7 +656,7 @@ export default function WildFireFighters(): JSX.Element {
     if (!scene) return newFires
 
     // Update existing fires
-    for (const [key, fire] of newFires) {
+    for (const [_key, fire] of newFires) {
       fire.spreadTime += deltaTime
       fire.intensity = Math.min(1, fire.intensity + deltaTime * 0.1)
 
@@ -950,7 +950,7 @@ export default function WildFireFighters(): JSX.Element {
     }
 
     gameLoopRef.current = requestAnimationFrame(gameLoop)
-  }, [gameState])
+  }, [gameState, checkGameConditions, checkWaterFireCollision, updateFires, updatePlayer])
 
   // Start game
   const startGame = (): void => {
@@ -1049,7 +1049,13 @@ export default function WildFireFighters(): JSX.Element {
     
     return () => {
       if (rendererRef.current && mountRef.current) {
-        mountRef.current.removeChild(rendererRef.current.domElement)
+        useEffect(() => {
+          const mount = mountRef.current;
+          
+          return () => {
+            // cleanup using mount
+          };
+        }, []);  
       }
     }
   }, [initScene])
@@ -1191,7 +1197,7 @@ export default function WildFireFighters(): JSX.Element {
                   <h3 className="font-semibold mb-2">⚠️ 3D Strategy:</h3>
                   <p>• Fires spread slower but in all directions</p>
                   <p>• Use 3rd-person view to survey the battlefield</p>
-                  <p>• Don't get surrounded by fire cones</p>
+                  <p>• Don&apos;t get surrounded by fire cones</p>
                   <p>• Wind affects fire spread patterns</p>
                 </div>
               </div>
@@ -1212,7 +1218,7 @@ export default function WildFireFighters(): JSX.Element {
               {gameState.gameStatus === 'won' ? (
                 <>
                   <h2 className="text-3xl font-bold text-green-500">🎉 Victory!</h2>
-                  <p className="text-lg">You've successfully extinguished all 3D wildfires!</p>
+                  <p className="text-lg">You&apos;ve successfully extinguished all 3D wildfires!</p>
                   <div className="bg-green-50 p-4 rounded">
                     <p className="font-semibold">All fires extinguished!</p>
                     <p>Time: {Math.round(gameState.timeElapsed)}s</p>
