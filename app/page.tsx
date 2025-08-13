@@ -66,6 +66,29 @@ const INITIAL_FIRES = 5 // number of initial fires
 const CAMERA_DISTANCE = 10
 const CAMERA_HEIGHT = 8
 
+// Example: wrap each one in useCallback
+
+const generateTrees = useCallback(() => {
+  // your tree generation logic here
+}, []); // add dependencies here if it uses state/props
+
+const updatePlayer = useCallback(() => {
+  // your update player logic here
+}, []); // add dependencies if it uses state/props
+
+const updateFires = useCallback(() => {
+  // your update fires logic here
+}, []); // add dependencies if it uses state/props
+
+const checkWaterFireCollision = useCallback(() => {
+  // your collision check logic here
+}, []); // add dependencies if it uses state/props
+
+const checkGameConditions = useCallback(() => {
+  // your game condition check logic here
+}, []); // add dependencies if it uses state/props
+
+
 export default function WildFireFighters(): JSX.Element {
   useEffect(() => {
     const initializeFarcaster = async () => {
@@ -1024,18 +1047,14 @@ export default function WildFireFighters(): JSX.Element {
   useEffect(() => {
     initScene()
     
-    return () => {
-      if (rendererRef.current && mountRef.current) {
-        useEffect(() => {
-          const mount = mountRef.current;
-          
-          return () => {
+      return () => {
+          if (rendererRef.current && mountRef.current) {
+            const mount = mountRef.current;
             // cleanup using mount
-          };
-        }, []);  
+            // example: mount.removeChild(rendererRef.current.domElement);
       }
-    }
-  }, [initScene])
+    };
+  }, [initScene]);
 
   // Start game loop
   useEffect(() => {
