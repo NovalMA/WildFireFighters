@@ -298,43 +298,44 @@ export default function WildFireFighters(): JSX.Element {
   }, [gameState.refillStations])
 
   // Generate random trees with collision avoidance
-  const generateTrees = useCallback((refillStations: RefillStation[]): { x: number; z: number; radius: number }[] => {
-    const trees: { x: number; z: number; radius: number }[] = []
-    const maxAttempts = 200 // Increased attempts for better coverage
-    
-    for (let i = 0; i < 40 && trees.length < 40; i++) {
-      let attempts = 0
-      let placed = false
-      
-      while (attempts < maxAttempts && !placed) {
-        const x = (Math.random() - 0.5) * (WORLD_SIZE - 5)
-        const z = (Math.random() - 0.5) * (WORLD_SIZE - 5)
-        
-        // Check distance from refill stations
-        const nearStation = refillStations.some(station => 
-          Math.sqrt((x - station.position.x) ** 2 + (z - station.position.z) ** 2) < 5
-        )
-        
-        // Check distance from center
-        const nearCenter = Math.sqrt(x ** 2 + z ** 2) < 8
-        
-        // Check distance from other trees
-        const treeRadius = Math.random() * 0.8 + 1
-        const nearOtherTree = trees.some(tree => 
-          Math.sqrt((x - tree.x) ** 2 + (z - tree.z) ** 2) < (tree.radius + treeRadius + 1)
-        )
-        
-        if (!nearStation && !nearCenter && !nearOtherTree) {
-          trees.push({ x, z, radius: treeRadius * 0.8 })
-          placed = true
-        }
-        
-        attempts++
+const generateTrees = useCallback((refillStations: RefillStation[]) => {
+  const trees: { x: number; z: number; radius: number }[] = []
+  const maxAttempts = 200 // Increased attempts for better coverage
+
+  for (let i = 0; i < 40 && trees.length < 40; i++) {
+    let attempts = 0
+    let placed = false
+
+    while (attempts < maxAttempts && !placed) {
+      const x = (Math.random() - 0.5) * (WORLD_SIZE - 5)
+      const z = (Math.random() - 0.5) * (WORLD_SIZE - 5)
+
+      // Check distance from refill stations
+      const nearStation = refillStations.some(station =>
+        Math.sqrt((x - station.position.x) ** 2 + (z - station.position.z) ** 2) < 5
+      )
+
+      // Check distance from center
+      const nearCenter = Math.sqrt(x ** 2 + z ** 2) < 8
+
+      // Check distance from other trees
+      const treeRadius = Math.random() * 0.8 + 1
+      const nearOtherTree = trees.some(tree =>
+        Math.sqrt((x - tree.x) ** 2 + (z - tree.z) ** 2) < (tree.radius + treeRadius + 1)
+      )
+
+      if (!nearStation && !nearCenter && !nearOtherTree) {
+        trees.push({ x, z, radius: treeRadius * 0.8 })
+        placed = true
       }
+
+      attempts++
     }
-    
-    return trees
-  }, [])
+  }
+
+  return trees
+}, [WORLD_SIZE])
+
 
   // Initialize fires with realistic spherical particles
   const initializeFires = useCallback((): Map<string, FireCell> => {
@@ -927,7 +928,7 @@ export default function WildFireFighters(): JSX.Element {
     }
 
     gameLoopRef.current = requestAnimationFrame(gameLoop)
-  }, [gameState, checkGameConditions, checkWaterFireCollision, updateFires, updatePlayer])
+  }, [gameState])
 
   // Start game
   const startGame = (): void => {
@@ -1023,15 +1024,19 @@ export default function WildFireFighters(): JSX.Element {
   // Initialize scene when component mounts
   useEffect(() => {
     initScene()
-    
-      return () => {
-          if (rendererRef.current && mountRef.current) {
-            const mount = mountRef.current;
-            // cleanup using mount
-            // example: mount.removeChild(rendererRef.current.domElement);
+
+    return () => {
+      if (rendererRef.current) {
+        rendererRef.current.dispose?.() // dispose WebGL resources
       }
-    };
-  }, [initScene]);
+      if (mountRef.current && rendererRef.current) {
+        const mount = mountRef.current
+        if (rendererRef.current.domElement.parentNode === mount) {
+          mount.removeChild(rendererRef.current.domElement)
+        }
+      }
+    }
+  }, [initScene])
 
   // Start game loop
   useEffect(() => {
