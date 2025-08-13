@@ -226,7 +226,7 @@ export default function WildFireFighters(): JSX.Element {
     }))
 
     // Initialize refill stations
-    gameState.refillStations.forEach((station, _index) => {
+    gameState.refillStations.forEach((station) => {
       const stationGeometry = new THREE.CylinderGeometry(station.radius, station.radius, 0.5, 16)
       const stationMaterial = new THREE.MeshLambertMaterial({ color: 0x4a90e2 })
       const stationMesh = new THREE.Mesh(stationGeometry, stationMaterial)
@@ -470,41 +470,17 @@ export default function WildFireFighters(): JSX.Element {
       keysRef.current.delete(e.key.toLowerCase())
     }
 
-    const handleMouseMove = (e: MouseEvent): void => {
-      if (gameState.gameStatus !== 'playing' || !mouseRef.current.isDragging) return
-      mouseRef.current.x = e.movementX
-      mouseRef.current.y = e.movementY
-    }
-
-    const handleMouseDown = (e: MouseEvent): void => {
-      if (gameState.gameStatus !== 'playing') return
-      mouseRef.current.isDragging = true
-      e.preventDefault()
-    }
-
-    const handleMouseUp = (_e: MouseEvent): void => {
-      mouseRef.current.isDragging = false
-      mouseRef.current.x = 0
-      mouseRef.current.y = 0
-    }
-
     const handlePointerLockChange = (): void => {
       // Handle pointer lock changes
     }
 
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('keyup', handleKeyUp)
-    window.addEventListener('mousemove', handleMouseMove)
-    window.addEventListener('mousedown', handleMouseDown)
-    window.addEventListener('mouseup', handleMouseUp)
     document.addEventListener('pointerlockchange', handlePointerLockChange)
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mousedown', handleMouseDown)
-      window.removeEventListener('mouseup', handleMouseUp)
       document.removeEventListener('pointerlockchange', handlePointerLockChange)
     }
   }, [gameState.gameStatus])
@@ -656,9 +632,10 @@ export default function WildFireFighters(): JSX.Element {
     if (!scene) return newFires
 
     // Update existing fires
-    for (const [_key, fire] of newFires) {
+    for (const [key, fire] of newFires) {
       fire.spreadTime += deltaTime
       fire.intensity = Math.min(1, fire.intensity + deltaTime * 0.1)
+      console.log(key);
 
       // Update fire visual intensity for particle system
       if (fire.mesh) {
